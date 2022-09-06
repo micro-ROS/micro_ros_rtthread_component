@@ -1,0 +1,49 @@
+From: acuadros95 <acuadros1995@gmail.com>
+Date: Wed, 7 Sep 2022 10:51:49 +0200
+Subject: [PATCH] Foxy patch for ament_cmake
+
+---
+ .../ament_cmake_environment_hooks_package_hook.cmake     | 6 +-----
+ .../ament_generate_package_environment.cmake             | 9 ++-------
+ 2 files changed, 3 insertions(+), 12 deletions(-)
+
+diff --git a/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake b/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake
+index 3b59d80..40539d6 100644
+--- a/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake
++++ b/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake
+@@ -12,11 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-if(WIN32)
+-    set(_ext ".bat")
+-else()
+-    set(_ext ".sh")
+-endif()
++set(_ext ".bat")
+ ament_environment_hooks(
+   "${ament_cmake_core_DIR}/environment_hooks/environment/ament_prefix_path${_ext}"
+   "${ament_cmake_core_DIR}/environment_hooks/environment/path${_ext}"
+diff --git a/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake b/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake
+index d02ddb3..9aa0665 100644
+--- a/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake
++++ b/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake
+@@ -59,13 +59,8 @@ function(ament_generate_package_environment)
+           set(all_hooks "${all_hooks}source;${hook}\n")
+           set(native_hook "/${hook}")
+           file(TO_NATIVE_PATH "${native_hook}" native_hook)
+-          if(WIN32)
+-            set(ENVIRONMENT_HOOKS
+-                "${ENVIRONMENT_HOOKS}call:ament_append_value AMENT_ENVIRONMENT_HOOKS[${PROJECT_NAME}] \"%AMENT_CURRENT_PREFIX%${native_hook}\"\n")
+-          else()
+-            set(ENVIRONMENT_HOOKS
+-                "${ENVIRONMENT_HOOKS}ament_append_value AMENT_ENVIRONMENT_HOOKS \"$AMENT_CURRENT_PREFIX${native_hook}\"\n")
+-          endif()
++          set(ENVIRONMENT_HOOKS
++              "${ENVIRONMENT_HOOKS}call:ament_append_value AMENT_ENVIRONMENT_HOOKS[${PROJECT_NAME}] \"%AMENT_CURRENT_PREFIX%${native_hook}\"\n")
+         endforeach()
+       endif()
+ 
+-- 
+2.25.1
+

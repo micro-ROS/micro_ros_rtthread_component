@@ -1,0 +1,29 @@
+From a020c7e86ff7b9c20f62481bc0bc77a77d6e92e7 Mon Sep 17 00:00:00 2001
+From: acuadros95 <acuadros1995@gmail.com>
+Date: Wed, 7 Sep 2022 12:50:10 +0200
+Subject: [PATCH] Foxy patch for Micro-XRCE-DDS-Client
+
+---
+ src/c/util/time.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/c/util/time.c b/src/c/util/time.c
+index 66c496d..ce67933 100644
+--- a/src/c/util/time.c
++++ b/src/c/util/time.c
+@@ -12,6 +12,12 @@
+ //==================================================================
+ //                             PUBLIC
+ //==================================================================
++
++struct timespec{
++    long   tv_sec;
++    long   tv_nsec;
++};
++
+ int64_t uxr_millis(
+         void)
+ {
+-- 
+2.37.2.windows.2
+

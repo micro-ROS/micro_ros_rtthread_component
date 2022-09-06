@@ -1,0 +1,54 @@
+
+# Kconfig file for package micro_ros_rtthread_package
+menuconfig PKG_USING_MICRO_ROS_RTTHREAD_PACKAGE
+    bool "micro-ROS package for RTThread"
+    default n
+
+if PKG_USING_MICRO_ROS_RTTHREAD_PACKAGE
+
+    config PKG_MICRO_ROS_RTTHREAD_PACKAGE_PATH
+        string
+        default "/packages/tools/micro_ros_rtthread_package"
+
+    config PKG_MICRO_ROS_RTTHREAD_PACKAGE_EXAMPLES
+        bool "Include examples"
+        default true
+
+    choice
+        prompt "Distribution"
+        default PKG_MICRO_ROS_RTTHREAD_PACKAGE_FOXY_DISTRO
+        help
+            Select the micro-ROS distro
+
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_HUMBLE_DISTRO
+            bool "Humble"
+
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_FOXY_DISTRO
+            bool "Foxy"
+    endchoice
+
+    menu "Memory configuration"
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_NODES
+            int "# Nodes"
+            default 1
+
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_PUBLISHERS
+            int "# Publishers"
+            default 1
+
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_SUBSCRIBERS
+            int "# Subscribers"
+            default 1
+
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_SERVICES
+            int "# Services"
+            default 0
+
+        config PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_CLIENTS
+            int "# Clients"
+            default 0
+
+    endmenu
+
+endif
+

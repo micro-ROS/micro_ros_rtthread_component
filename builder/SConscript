@@ -1,0 +1,93 @@
+from building import *
+import rtconfig
+import sys
+
+cwd = GetCurrentDir()
+sys.path.append(cwd)
+
+from microros_utils.library_builder import Build
+from microros_utils.library_builder import CMakeToolchain
+from microros_utils.utils import run_cmd, rmtree, EnvironmentHandler, MetaFileGenerator
+
+
+##############################
+#### SCons initialization ####
+##############################
+env = Environment()
+
+AddOption('--build_microros', nargs=0, help='Enable micro-ROS build')
+AddOption('--clean_microros', nargs=0, help='Clean micro-ROS build')
+build_microros = env.GetOption("build_microros") is not None
+clean_microros = env.GetOption("clean_microros") is not None
+
+#################################
+#### Clean micro-ROS library ####
+#################################
+
+if clean_microros:
+	print("Cleaning micro-ROS for RT-Thread\n")
+	rmtree(cwd + '\\libmicroros')
+
+#################################
+#### Build micro-ROS library ####
+#################################
+
+if build_microros:
+
+	# Check python3 in PATH
+	env_handler = EnvironmentHandler()
+	if not env_handler.find_and_set_python3():
+		print("Please make sure that a Python 3 installation is available in PATH")
+		sys.exit(1)
+
+	# Install dependencies
+	env_handler.install_python_dependencies(["catkin-pkg", "lark-parser", "empy", "colcon-common-extensions", "importlib-resources", "pyyaml", "pytz", "markupsafe==2.0.1"])
+
+	print("Building micro-ROS for RT-Thread")
+
+	# Load micro-ROS build configuration
+	meta = MetaFileGenerator(cwd + '\\user.meta')
+	meta.set_variable("rmw_microxrcedds", "RMW_UXRCE_MAX_NODES", int(GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_NODES')))
+	meta.set_variable("rmw_microxrcedds", "RMW_UXRCE_MAX_PUBLISHERS", int(GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_PUBLISHERS')))
+	meta.set_variable("rmw_microxrcedds", "RMW_UXRCE_MAX_SUBSCRIPTIONS", int(GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_SUBSCRIBERS')))
+	meta.set_variable("rmw_microxrcedds", "RMW_UXRCE_MAX_SERVICES", int(GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_SERVICES')))
+	meta.set_variable("rmw_microxrcedds", "RMW_UXRCE_MAX_CLIENTS", int(GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_MAX_CLIENTS')))
+
+	# Check selected ROS2 distro
+	if GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_HUMBLE_DISTRO'):
+		distro = "humble"
+	elif GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_FOXY_DISTRO'):
+		distro = "foxy"
+	else:
+		print("Error, no valid ROS2 distrubition selected")
+		sys.exit(1)
+
+	# Launch micro-ROS builder
+	modified_env = env_handler.get_env()
+	builder = Build(library_folder=cwd, packages_folder=cwd + '\\extra_packages', distro=distro, env=modified_env)
+	builder.run(cwd + "\\toolchain.cmake", meta.path)
+
+################################
+#### Link micro-ROS library ####
+################################
+
+# micro-ROS library
+INCLUDE_PATH = cwd + '\\libmicroros\\include'
+LIBPATH = [cwd + '\\libmicroros']
+LIBS = ['microros']
+
+# Provided package sources
+package_cwd = os.path.abspath(GetCurrentDir() + "\\..")
+LOCAL_INCLUDE_PATH = package_cwd + '\\include'
+SRC_PATH = package_cwd + '\\src'
+EXAMPLES_PATH = package_cwd + '\\examples'
+SRC = [package_cwd + '\\src\\microros_time.c', package_cwd + '\\src\\microros_rtthread_net_transport.c']
+
+if GetDepend('PKG_MICRO_ROS_RTTHREAD_PACKAGE_EXAMPLES'):
+    SRC.append(package_cwd + '\\examples\\microros_pub.c')
+    SRC.append(package_cwd + '\\examples\\microros_sub.c')
+
+LOCAL_CCFLAGS = ''
+
+group = DefineGroup('microros', SRC, depend = [], CPPPATH = [INCLUDE_PATH, LOCAL_INCLUDE_PATH, SRC_PATH, EXAMPLES_PATH], LOCAL_CCFLAGS = LOCAL_CCFLAGS, LIBS = LIBS, LIBPATH = LIBPATH)
+Return('group')

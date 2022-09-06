@@ -1,0 +1,34 @@
+{
+  "name": "micro_ros_rtthread_package",
+  "description": "Please add description of micro_ros_rtthread_package in English.",
+  "description_zh": "",  
+  "enable": "PKG_USING_MICRO_ROS_RTTHREAD_PACKAGE", 
+  "keywords": [
+    "micro_ros_rtthread_package"
+  ],
+  "category": "tools",
+  "author": {
+    "name": "micro-ROS",
+    "email": "pablogarrido@eprosima.com",
+    "github": "micro-ROS"
+  },
+  "license": "Apache-2.0",
+  "repository": "https://github.com/eProsima/micro-Landmark",
+  "icon": "unknown",
+  "homepage": "unknown",
+  "doc": "unknown",
+  "site": [
+    {
+      "version": "v1.0.0",
+      "URL": "https://micro_ros_rtthread_package-1.0.0.zip",
+      "filename": "micro_ros_rtthread_package-1.0.0.zip",
+      "VER_SHA": "fill in the git version SHA value"
+    },
+    {
+      "version": "latest",
+      "URL": "https://github.com/eProsima/micro-Landmark.git",
+      "filename": null,
+      "VER_SHA": "master"
+    }
+  ]
+}

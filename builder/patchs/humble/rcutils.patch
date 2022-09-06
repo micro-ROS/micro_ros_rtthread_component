@@ -1,0 +1,37 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 04c7e15..7b5c4fd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -66,7 +66,6 @@ set(rcutils_sources
+   src/format_string.c
+   src/hash_map.c
+   src/logging.c
+-  src/process.c
+   src/qsort.c
+   src/repl_str.c
+   src/shared_library.c
+@@ -111,7 +110,7 @@ em.invoke( \
+ string(REPLACE ";" "$<SEMICOLON>" python_code "${python_code}")
+ add_custom_command(OUTPUT include/rcutils/logging_macros.h
+   COMMAND ${CMAKE_COMMAND} -E make_directory "include/rcutils"
+-  COMMAND Python3::Interpreter ARGS -c "${python_code}"
++  COMMAND py -3 ARGS -c "${python_code}"
+   DEPENDS
+     "${CMAKE_CURRENT_BINARY_DIR}/logging_macros.h.em.watch"
+     "${CMAKE_CURRENT_BINARY_DIR}/logging.py.watch"
+diff --git a/src/time_unix.c b/src/time_unix.c
+index ab6ec6e..46b5763 100644
+--- a/src/time_unix.c
++++ b/src/time_unix.c
+@@ -50,6 +50,11 @@ extern "C"
+ 
+ #define __WOULD_BE_NEGATIVE(seconds, subseconds) (seconds < 0 || (subseconds < 0 && seconds == 0))
+ 
++struct timespec{
++    long   tv_sec;
++    long   tv_nsec;
++};
++
+ rcutils_ret_t
+ rcutils_system_time_now(rcutils_time_point_value_t * now)
+ {

@@ -1,0 +1,22 @@
+From 5c24b9eacec2f46193059e167be27db2e9fb20f6 Mon Sep 17 00:00:00 2001
+From: acuadros95 <acuadros1995@gmail.com>
+Date: Wed, 7 Sep 2022 12:50:10 +0200
+Subject: [PATCH] Foxy patch for rmw_implementation
+
+---
+ rmw_implementation/rmw_implementation-extras.cmake.in | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/rmw_implementation/rmw_implementation-extras.cmake.in b/rmw_implementation/rmw_implementation-extras.cmake.in
+index 826af75..4d6e64d 100644
+--- a/rmw_implementation/rmw_implementation-extras.cmake.in
++++ b/rmw_implementation/rmw_implementation-extras.cmake.in
+@@ -63,6 +63,3 @@ else()
+   # no need to find_package @PROJECT_NAME@
+   # since this code is already part of a find_package call of that package
+ endif()
+-
+-find_package(Threads REQUIRED)
+-list(APPEND rmw_implementation_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+-- 
+2.25.1

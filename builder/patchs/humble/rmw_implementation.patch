@@ -1,0 +1,193 @@
+From 42143dba76f3e51a9ed36cb0c32abdd07c9b4e18 Mon Sep 17 00:00:00 2001
+From: acuadros95 <acuadros1995@gmail.com>
+Date: Thu, 8 Sep 2022 14:26:46 +0200
+Subject: [PATCH] Humble patch for rmw_implementation
+
+---
+ rmw_implementation/CMakeLists.txt    |  6 +-
+ rmw_implementation/package.xml       |  1 -
+ rmw_implementation/src/functions.cpp | 88 +---------------------------
+ 3 files changed, 4 insertions(+), 91 deletions(-)
+
+diff --git a/rmw_implementation/CMakeLists.txt b/rmw_implementation/CMakeLists.txt
+index a54ca52..539c1f0 100644
+--- a/rmw_implementation/CMakeLists.txt
++++ b/rmw_implementation/CMakeLists.txt
+@@ -12,7 +12,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+ endif()
+ 
+ find_package(ament_cmake REQUIRED)
+-find_package(ament_index_cpp REQUIRED)
+ find_package(rmw_implementation_cmake REQUIRED)
+ 
+ if(BUILD_TESTING)
+@@ -56,7 +55,6 @@ else()
+   target_link_libraries(${PROJECT_NAME} PUBLIC
+     rmw::rmw)
+   target_link_libraries(${PROJECT_NAME} PRIVATE
+-    ament_index_cpp::ament_index_cpp
+     rcpputils::rcpputils
+     rcutils::rcutils)
+   target_compile_definitions(${PROJECT_NAME}
+@@ -75,7 +73,7 @@ else()
+   configure_rmw_library(${PROJECT_NAME})
+ 
+   ament_export_targets(export_${PROJECT_NAME})
+-  ament_export_dependencies(ament_index_cpp rcpputils rcutils)
++  ament_export_dependencies(rcpputils rcutils)
+ 
+   if(BUILD_TESTING)
+     find_package(ament_cmake_gtest REQUIRED)
+@@ -83,7 +81,6 @@ else()
+     ament_target_dependencies(test_functions rcutils rmw)
+     target_link_libraries(test_functions
+       ${PROJECT_NAME}
+-      ament_index_cpp::ament_index_cpp
+       rcpputils::rcpputils
+       rcutils::rcutils)
+ 
+@@ -102,7 +99,6 @@ else()
+       if(TARGET benchmark_symbols${target_suffix})
+         target_link_libraries(benchmark_symbols${target_suffix}
+           ${PROJECT_NAME}
+-          ament_index_cpp::ament_index_cpp
+           rcpputils::rcpputils
+           rcutils::rcutils)
+       endif()
+diff --git a/rmw_implementation/package.xml b/rmw_implementation/package.xml
+index a9df58f..f8b3414 100644
+--- a/rmw_implementation/package.xml
++++ b/rmw_implementation/package.xml
+@@ -16,7 +16,6 @@
+   <buildtool_depend>ament_cmake</buildtool_depend>
+   <buildtool_depend>rmw_implementation_cmake</buildtool_depend>
+ 
+-  <depend>ament_index_cpp</depend>
+   <depend>rcpputils</depend>
+   <depend>rcutils</depend>
+   <build_depend>rmw</build_depend>
+diff --git a/rmw_implementation/src/functions.cpp b/rmw_implementation/src/functions.cpp
+index 892eb40..c89dc8c 100644
+--- a/rmw_implementation/src/functions.cpp
++++ b/rmw_implementation/src/functions.cpp
+@@ -20,8 +20,6 @@
+ #include <stdexcept>
+ #include <string>
+ 
+-#include "ament_index_cpp/get_resources.hpp"
+-
+ #include "rcutils/allocator.h"
+ #include "rcutils/format_string.h"
+ #include "rcutils/types/string_array.h"
+@@ -74,105 +72,25 @@ attempt_to_load_one_rmw(const std::string & library)
+ std::shared_ptr<rcpputils::SharedLibrary>
+ load_library()
+ {
+-  // The logic to pick the RMW library to load goes as follows:
+-  //
+-  // 1. If the user specified the library to use via the RMW_IMPLEMENTATION
+-  //    environment variable, try to load only that library.
+-  // 2. Otherwise, try to load the default RMW implementation.
+-  // 3. If that fails, try loading all other implementations available in turn
+-  //    until one succeeds or we run out of options.
+-
+-  std::string env_var;
+-  try {
+-    env_var = rcpputils::get_env_var("RMW_IMPLEMENTATION");
+-  } catch (const std::exception & e) {
+-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING(
+-      "failed to fetch RMW_IMPLEMENTATION "
+-      "from environment due to %s", e.what());
+-    return nullptr;
+-  }
+-
+-  // User specified an RMW, attempt to load that one and only that one
+-  if (!env_var.empty()) {
+-    return attempt_to_load_one_rmw(env_var);
+-  }
+-
+-  // User didn't specify, so next try to load the default RMW
+-  std::shared_ptr<rcpputils::SharedLibrary> ret;
+-
+-  ret = attempt_to_load_one_rmw(STRINGIFY(DEFAULT_RMW_IMPLEMENTATION));
+-  if (ret != nullptr) {
+-    return ret;
+-  }
+-
+-  // OK, we failed to load the default RMW.  Fetch all of the ones we can
+-  // find and attempt to load them one-by-one.
+-  rmw_reset_error();
+-  const std::map<std::string, std::string> packages_with_prefixes = ament_index_cpp::get_resources(
+-    "rmw_typesupport");
+-  for (const auto & package_prefix_pair : packages_with_prefixes) {
+-    if (package_prefix_pair.first != "rmw_implementation") {
+-      ret = attempt_to_load_one_rmw(package_prefix_pair.first);
+-      if (ret != nullptr) {
+-        return ret;
+-      }
+-      rmw_reset_error();
+-    }
+-  }
+-
+-  // If we made it here, we couldn't find an rmw to load.
+-
+-  RMW_SET_ERROR_MSG("failed to load any RMW implementations");
+-
+   return nullptr;
+ }
+ 
+ std::shared_ptr<rcpputils::SharedLibrary>
+ get_library()
+ {
+-  if (!g_rmw_lib) {
+-    g_rmw_lib = load_library();
+-  }
+-  return g_rmw_lib;
++  return nullptr;
+ }
+ 
+ void *
+ lookup_symbol(std::shared_ptr<rcpputils::SharedLibrary> lib, const std::string & symbol_name)
+ {
+-  if (!lib) {
+-    if (!rmw_error_is_set()) {
+-      RMW_SET_ERROR_MSG("no shared library to lookup");
+-    }  // else assume library loading failed
+-    return nullptr;
+-  }
+-
+-  if (!lib->has_symbol(symbol_name)) {
+-    try {
+-      std::string library_path = lib->get_library_path();
+-      RMW_SET_ERROR_MSG_WITH_FORMAT_STRING(
+-        "failed to resolve symbol '%s' in shared library '%s'",
+-        symbol_name.c_str(), library_path.c_str());
+-    } catch (const std::exception & e) {
+-      RMW_SET_ERROR_MSG_WITH_FORMAT_STRING(
+-        "failed to resolve symbol '%s' in shared library due to %s",
+-        symbol_name.c_str(), e.what());
+-    }
+-    return nullptr;
+-  }
+-  return lib->get_symbol(symbol_name);
++  return nullptr;
+ }
+ 
+ void *
+ get_symbol(const char * symbol_name)
+ {
+-  try {
+-    return lookup_symbol(get_library(), symbol_name);
+-  } catch (const std::exception & e) {
+-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING(
+-      "failed to get symbol '%s' due to %s",
+-      symbol_name, e.what());
+-    return nullptr;
+-  }
++  return nullptr;
+ }
+ 
+ #ifdef __cplusplus
+-- 
+2.37.2.windows.2
+
