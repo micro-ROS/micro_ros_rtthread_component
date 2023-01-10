@@ -2,7 +2,7 @@
 ![banner](.images/banner-light-theme.png#gh-light-mode-only)
 
 # micro-ROS for RT-Thread
-This is a micro-ROS library for projects based on RT-Thread RTOS.
+This is a micro-ROS library for projects based on [RT-Thread RTOS](https://www.rt-thread.io/).
 
 The build process for ROS 2 and micro-ROS is based on custom meta-build system tools and [CMake](https://cmake.org/).
 SCons will handle the full build process, including dependencies, compilation and linkage.
